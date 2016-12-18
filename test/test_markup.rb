@@ -396,6 +396,22 @@ org
     assert_match("Too many levels", page1.formatted_data)
   end
 
+  test "include directive with unpathed include" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:deep]]\n", commit_details)
+    @wiki.write_page("/going/in/deep", :textile, "[[include:shallow]]", commit_details)
+    @wiki.write_page("/going/shallow", :textile, "found me", commit_details)
+    page1 = @wiki.page("page1")
+    assert_html_equal("<p>hello<br/></p><p>found me</p>", page1.formatted_data)
+  end
+
+  test "unpathed include directive with a infinite loop" do
+    @wiki.write_page("page1", :textile, "hello\n[[include:page2]]\n", commit_details)
+    @wiki.write_page("/a/very/long/path/to/page2", :textile, "goodbye\n[[include:page3]]", commit_details)
+    @wiki.write_page("/another/long/path/to/page3", :textile, "[[include:page1]]", commit_details)
+    page1 = @wiki.page("page1")
+    assert_match("Too many levels", page1.formatted_data)
+  end
+
   test "ugly include directives that should all be not found" do
     %w(
 
