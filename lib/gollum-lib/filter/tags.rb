@@ -104,6 +104,9 @@ class Gollum::Filter::Tags < Gollum::Filter
 
     if @markup.include_levels > 0
       page = find_page_from_name(resolved_page_name)
+      if ! page
+        page = find_page_from_name(page_name)
+      end
       if page
         page.formatted_data(@markup.encoding, @markup.include_levels-1)
       else
